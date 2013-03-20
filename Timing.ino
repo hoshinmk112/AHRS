@@ -1,9 +1,9 @@
 /*
 */
 #include "Timing.h"
+#include "AHRS.h"
 
-
-volatile unsigned long timer0_millis = 0;
+//volatile unsigned long timer0_millis;
 
 // this function replaces the arduino millis() funcion
 unsigned long DIYmillis(void) {

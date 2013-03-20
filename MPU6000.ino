@@ -9,12 +9,12 @@
 
 volatile uint8_t MPU6000_newdata = 0;
 
-static byte MPU6000_SPI_read(byte reg);
-static void MPU6000_SPI_write(byte reg, byte data);
-static void MPU6000_data_int(void);
+// static byte MPU6000_SPI_read(byte reg);
+// static void MPU6000_SPI_write(byte reg, byte data);
+// static void MPU6000_data_int(void);
 
 // MPU6000 SPI functions
-byte MPU6000_SPI_read(byte reg) {
+static byte MPU6000_SPI_read(byte reg) {
     byte dump;
     byte return_value;
     byte addr = reg | 0x80; // Set most significant bit
@@ -26,7 +26,7 @@ byte MPU6000_SPI_read(byte reg) {
   return (return_value);
 }
 
-void MPU6000_SPI_write(byte reg, byte data) {
+static void MPU6000_SPI_write(byte reg, byte data) {
     byte dump;
     digitalWrite(MPU6000_CHIP_SELECT_PIN, LOW);
     dump = SPI.transfer(reg);
@@ -35,7 +35,7 @@ void MPU6000_SPI_write(byte reg, byte data) {
 }
 
 // MPU6000 INTERRUPT ON INT0
-void MPU6000_data_int(void) {
+static void MPU6000_data_int(void) {
     MPU6000_newdata++;
 }
 
@@ -116,7 +116,7 @@ void ReadMPU6000(void) {
     // Read GyroY
     byte_H = MPU6000_SPI_read(MPUREG_GYRO_YOUT_H);
     byte_L = MPU6000_SPI_read(MPUREG_GYRO_YOUT_L);
-    vGyroRaw.y = (byte_H< < 8)| byte_L;
+    vGyroRaw.y = (byte_H << 8)| byte_L;
     
     // Read GyroZ
     byte_H = MPU6000_SPI_read(MPUREG_GYRO_ZOUT_H);

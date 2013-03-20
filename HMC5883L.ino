@@ -2,6 +2,8 @@
 /* I2C code for HMC5583 magnetometer                       */
 /*                                                         */
 /* ******************************************************* */
+#include <HMC58X3.h>
+
 #include "HMC5883L.h"
 #include "AHRS.h"
 #include "Parameters.h"

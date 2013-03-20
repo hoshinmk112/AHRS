@@ -1,11 +1,32 @@
+/*
+*/
 #ifndef AHRS_H
 #define AHRS_H
 
+#include "Vector.h"
 
-#ifdef __cplusplus
-extern "C"{
-#endif
-	
+
+//========================================
+// Output Data Configuration
+#define PRINT_JSON              (0)
+#define PRINT_LEVIL             (0)
+#define PRINT_LEVILBARO         (0)
+#define CALIBRATE_MAG           (1)
+#define CALIBRATE_GYROACCEL     (1)
+
+// Which platform
+#define MONGOOSE                (0)
+#define ARDIMU                  (1)
+
+//use local coordinate frame measured at calibration time
+//or use Mongoose frame
+#define REORIENT                (1)
+#define IGNORE_MAG              (0)
+
+// #ifdef __cplusplus
+// extern "C"{
+// #endif
+
 extern float deltaT;
 extern Vector3 vGyro;
 extern Vector3 vAccel;
@@ -46,8 +67,8 @@ extern int  verticalSpeed;
 extern float gyroTemp;
 extern unsigned int gyroTempRaw;
 
-#ifdef __cplusplus
-}
-#endif
+// #ifdef __cplusplus
+// }
+// #endif
 
 #endif // AHRS_H

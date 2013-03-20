@@ -1,7 +1,7 @@
 /*
 */
 #include "Output.h"
-
+#include "AHRS.h"
 
 void PrintData(void) {    
 #if PRINT_JSON == 1

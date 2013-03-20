@@ -1,6 +1,7 @@
 /*
 */
 #include "Vector.h"
+#include "AHRS.h"
 
 /* MATRIX3 */
 Matrix3::Matrix3 (void) {
@@ -119,7 +120,6 @@ const Vector3 Vector3::squared() const {
 const Vector3 Vector3::normalize() {
     float myMag = sqrt(x*x + y*y + z*z);
     return Vector3(x / myMag, y / myMag, z / myMag);
-  
 }
   
 void Vector3::print(void) {

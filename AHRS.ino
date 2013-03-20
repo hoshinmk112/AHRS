@@ -1,4 +1,5 @@
-
+/*
+*/
 // Released under Creative Commons License 
 // Modifications and additions by Cory Duce to allow it to work with Mongoose hardware
 // Based on code by Doug Weibel and Jose Julio which was based on ArduIMU v1.5 by Jordi Munoz 
@@ -33,7 +34,7 @@
  Arduino IDE : Select board  "Arduino Pro or Pro mini (5V, 16MHz) w/ Atmega328"
  */
 #include <EEPROM.h>
-#include <HMC58X3.h>
+//#include <HMC58X3.h>
 #include <math.h>
 #include <Wire.h>
 
@@ -41,30 +42,9 @@
 #include "ApplicationRoutines.h"
 #include "BMP085.h"
 #include "DCM.h"
-#include "EE.h"
 #include "HMC5883L.h"
-#include "MPU6000.h"
 #include "Output.h"
 #include "Timing.h"
-#include "Vector.h"
-
-
-//========================================
-// Output Data Configuration
-#define PRINT_JSON              (0)
-#define PRINT_LEVIL             (0)
-#define PRINT_LEVILBARO         (0)
-#define CALIBRATE_MAG           (0)
-#define CALIBRATE_GYROACCEL     (1)
-
-// Which platform
-#define MONGOOSE                (1)
-#define ARDIMU                  0
-
-//use local coordinate frame measured at calibration time
-//or use Mongoose frame
-#define REORIENT                (1)
-#define IGNORE_MAG              (0)
 
 
 #define DEGTORAD        (0.01745329252) /* *pi/180 */

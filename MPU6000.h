@@ -58,9 +58,9 @@
 #define	BIT_RAW_RDY_EN		    	(0x01)
 #define	BIT_I2C_IF_DIS              	(0x10)
 
-#ifdef __cplusplus
-extern "C"{
-#endif
+// #ifdef __cplusplus
+// extern "C"{
+// #endif
 
 // global variables
 extern volatile uint8_t MPU6000_newdata;
@@ -68,8 +68,8 @@ extern volatile uint8_t MPU6000_newdata;
 extern void InitMPU6000(void);
 extern void ReadMPU6000(void);
 
-#ifdef __cplusplus
-}
-#endif
+// #ifdef __cplusplus
+// }
+// #endif
 
 #endif // MPU6000_H

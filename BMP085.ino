@@ -5,18 +5,20 @@
  license: CC BY-SA v3.0 - http://creativecommons.org/licenses/by-sa/3.0/
 */
 #include <Wire.h>
-#include "BMP085.h"
 
+#include "BMP085.h"
+#include "AHRS.h"
+ 
 // I2C address of BMP085
 #define BMP085_ADDRESS (0x77)  
 
 
- static short bmp085GetTemperature(unsigned int ut);
- static long bmp085GetPressure(unsigned long up);
- static char bmp085Read(unsigned char address);
- static int bmp085ReadInt(unsigned char address);
- static unsigned int bmp085ReadUT(void);
- static unsigned long bmp085ReadUP(void);
+ // static short bmp085GetTemperature(unsigned int ut);
+ // static long bmp085GetPressure(unsigned long up);
+ // static char bmp085Read(unsigned char address);
+ // static int bmp085ReadInt(unsigned char address);
+ // static unsigned int bmp085ReadUT(void);
+ // static unsigned long bmp085ReadUP(void);
 
 // Oversampling Setting
  static const unsigned char OSS = 0;  
@@ -85,7 +87,7 @@ void ReadAltitude(void) {
 
 // Calculate temperature given ut.
 // Value returned will be in units of 0.1 deg C
-short bmp085GetTemperature(unsigned int ut) {
+ static short bmp085GetTemperature(unsigned int ut) {
     long x1, x2;
     x1 = (((long)ut - (long)ac6) * (long)ac5) >> 15;
     x2 = ((long)mc << 11) / (x1 + md);
@@ -98,7 +100,7 @@ short bmp085GetTemperature(unsigned int ut) {
 // calibration values must be known
 // b5 is also required so bmp085GetTemperature(...) must be called first.
 // Value returned will be pressure in units of Pa.
-long bmp085GetPressure(unsigned long up) {
+ static long bmp085GetPressure(unsigned long up) {
     long x1, x2, x3, b3, b6, p;
     unsigned long b4, b7;
 
@@ -131,7 +133,7 @@ long bmp085GetPressure(unsigned long up) {
 }
 
 // Read 1 byte from the BMP085 at 'address'
-char bmp085Read(unsigned char address) {
+ static char bmp085Read(unsigned char address) {
     unsigned char data;
 
     Wire.beginTransmission(BMP085_ADDRESS);
@@ -148,7 +150,7 @@ char bmp085Read(unsigned char address) {
 // Read 2 bytes from the BMP085
 // First byte will be from 'address'
 // Second byte will be from 'address'+1
-int bmp085ReadInt(unsigned char address) {
+ static int bmp085ReadInt(unsigned char address) {
     unsigned char msb, lsb;
 
     Wire.beginTransmission(BMP085_ADDRESS);
@@ -166,7 +168,7 @@ int bmp085ReadInt(unsigned char address) {
 }
 
 // Read the uncompensated temperature value
-unsigned int bmp085ReadUT(void) {
+ static unsigned int bmp085ReadUT(void) {
     unsigned int ut;
 
     // Write 0x2E into Register 0xF4
@@ -186,7 +188,7 @@ unsigned int bmp085ReadUT(void) {
 }
 
 // Read the uncompensated pressure value
-unsigned long bmp085ReadUP(void) {
+ static unsigned long bmp085ReadUP(void) {
     unsigned char msb, lsb, xlsb;
     unsigned long up = 0;
 
