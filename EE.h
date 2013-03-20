@@ -19,4 +19,12 @@ template <class T> int EEPROM_readAnything(int ee, T& value) {
     return i;
 } 
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif // EE_H

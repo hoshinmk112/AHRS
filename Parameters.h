@@ -39,4 +39,12 @@
 #define MAGGAIN_8    			(2.22e-5)
 #define MAGGAIN_9   			(-2.16e-3)
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif // PARAMETERS_H

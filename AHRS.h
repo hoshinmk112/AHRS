@@ -1,6 +1,11 @@
 #ifndef AHRS_H
 #define AHRS_H
 
+
+#ifdef __cplusplus
+extern "C"{
+#endif
+	
 extern float deltaT;
 extern Vector3 vGyro;
 extern Vector3 vAccel;
@@ -40,5 +45,9 @@ extern int  baroAlt;
 extern int  verticalSpeed;
 extern float gyroTemp;
 extern unsigned int gyroTempRaw;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // AHRS_H

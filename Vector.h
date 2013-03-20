@@ -67,4 +67,12 @@ public:
     void print();
 };
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif // VECTOR_H
