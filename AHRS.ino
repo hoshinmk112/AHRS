@@ -83,8 +83,10 @@
 
 float deltaT;    // Integration time (DCM algorithm)
 static long timer = 0;   //general purpuse timer
+#if !(CALIBRATE_GYROACCEL)
 static long timerOld;
-static long timer24 = 0; //Second timer used to print values 
+#endif
+// static long timer24 = 0; //Second timer used to print values 
 
 Vector3 vGyro;
 Vector3 vAccel;
@@ -129,12 +131,14 @@ float gyroTemp = 0.0;
 unsigned int gyroTempRaw;
 
 //These counters allow us to sample some of the sensors at lower rates
+#if !(CALIBRATE_GYROACCEL)
 static unsigned int  compassCounter = 0;
 static unsigned int  baroCounter = 0;
 static unsigned int  powerCounter = 0;
 static unsigned int  printCounter = 0;
 static unsigned int  LEDCounter = 0;
 static unsigned int  powerOnCounter = 0;
+#endif
 
 void setup(void) { 
     Serial.begin(115200);
@@ -161,12 +165,12 @@ void setup(void) {
     Serial.println("Beginning operation.");
 }
 
-void loop(void) { //Main Loop 
+void loop() { //Main Loop 
 #if CALIBRATE_GYROACCEL == 1
     GyroAccelCal();
 #else
   
-    if((DIYmillis() - timer) >= 5) { // Main loop runs at 200Hz
+    if ((DIYmillis() - timer) >= 5) { // Main loop runs at 200Hz
         timerOld = timer;
         timer=DIYmillis();
         // Real time of loop run.

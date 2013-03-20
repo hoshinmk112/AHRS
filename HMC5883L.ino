@@ -11,7 +11,7 @@
 
 
 //I2C addresses 
-static int CompassAddress = 0x1E; // Write:0x3C  Read:0x3D
+// static int CompassAddress = 0x1E; // Write:0x3C  Read:0x3D
 
 static HMC58X3 magn;
 

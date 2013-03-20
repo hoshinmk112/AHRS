@@ -68,8 +68,8 @@ void ReadPressure(void) {
 }
 
 void ReadAltitude(void) {
-    float numerator, numeratorExp;
-    float denominator;
+    // float numerator, numeratorExp;
+    // float denominator;
     int oldBaroAlt = baroAlt;
     baroPres = bmp085GetPressure(bmp085ReadUP());
     baroAlt = 3.281 * (1 - pow(baroPres / 101325.0, 0.19)) / 2.2558e-5;
@@ -133,19 +133,19 @@ void ReadAltitude(void) {
 }
 
 // Read 1 byte from the BMP085 at 'address'
- static char bmp085Read(unsigned char address) {
-    unsigned char data;
+//  static char bmp085Read(unsigned char address) {
+//     // unsigned char data;
 
-    Wire.beginTransmission(BMP085_ADDRESS);
-    Wire.write(address);
-    Wire.endTransmission();
+//     Wire.beginTransmission(BMP085_ADDRESS);
+//     Wire.write(address);
+//     Wire.endTransmission();
 
-    Wire.requestFrom(BMP085_ADDRESS, 1);
-    while(!Wire.available()) {
-      /* */;
-    }
-    return Wire.read();
-}
+//     Wire.requestFrom(BMP085_ADDRESS, 1);
+//     while(!Wire.available()) {
+//       /* */;
+//     }
+//     return Wire.read();
+// }
 
 // Read 2 bytes from the BMP085
 // First byte will be from 'address'

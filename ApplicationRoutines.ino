@@ -19,8 +19,8 @@ void DeviceCalibrate(void) {
     Vector3 vCumGyroRaw;
     Vector3 vCumGyroRawSquared;
     Vector3 vAccelVariance;
-    float cumRoll;
-    float cumPitch;
+    // float cumRoll;
+    // float cumPitch;
     unsigned int  calibCounter;
   
     ReadGyroAccel();
