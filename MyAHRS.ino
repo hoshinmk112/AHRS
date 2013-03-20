@@ -32,74 +32,85 @@
  Programmer : 5.0v FTDI
  Arduino IDE : Select board  "Arduino Pro or Pro mini (5V, 16MHz) w/ Atmega328"
  */
+#include <EEPROM.h>
+#include <HMC58X3.h>
+#include <math.h>
+#include <Wire.h>
+
+#include "AHRS.h"
+#include "ApplicationRoutines.h"
+#include "BMP085.h"
+#include "DCM.h"
+#include "EE.h"
+#include "HMC5883L.h"
+#include "MPU6000.h"
+#include "Output.h"
+#include "Timing.h"
+#include "Vector.h"
+
 
 //========================================
 // Output Data Configuration
-#define PRINT_JSON              0
-#define PRINT_LEVIL             0
-#define PRINT_LEVILBARO         0
-#define CALIBRATE_MAG           0
-#define CALIBRATE_GYROACCEL     1
+#define PRINT_JSON              (0)
+#define PRINT_LEVIL             (0)
+#define PRINT_LEVILBARO         (0)
+#define CALIBRATE_MAG           (0)
+#define CALIBRATE_GYROACCEL     (1)
 
 // Which platform
-#define MONGOOSE                1
+#define MONGOOSE                (1)
 #define ARDIMU                  0
 
 //use local coordinate frame measured at calibration time
 //or use Mongoose frame
-#define REORIENT                1
-#define IGNORE_MAG              0
+#define REORIENT                (1)
+#define IGNORE_MAG              (0)
 
-#include "Parameters.h"
-#include "AHRSTypes.h"
-#include "MPU6000.h"
-#include <HMC58X3.h>
-#include <EEPROM.h>
-#include "EE.h"
-#include <Wire.h>
-#include <math.h>
 
-#define DEGTORAD 0.01745329252 // *pi/180
-#define RADTODEG 57.2957795131 // *180/pi
-#define FALSE 0
-#define TRUE 1
-#define FAST 1
-#define SLOW 0
+#define DEGTORAD        (0.01745329252) /* *pi/180 */
+#define RADTODEG        (57.2957795131) /* *180/pi */
+#define FALSE           (0)
+#define TRUE            (1)
+#define FAST            (1)
+#define SLOW            (0)
 
-#define SLEW_RATE 0.004
+#define SLEW_RATE       (0.004)
 
-#define SIGMA_angle  0.1 // S.D. of compass measurement 0.1 radians
+// S.D. of compass measurement 0.1 radians
+#define SIGMA_angle     (0.1) 
 //don't apply g angle correction when g-load closer to 1 than this:
-#define G_DEADBAND 0.05
+#define G_DEADBAND      (0.05)
 //no of samples for initial calibration of gyro drift
-#define NUM_SAMPLES 1000
+#define NUM_SAMPLES     (1000)
 //exponential decay for turn rate, etc
-#define BETA 0.975
+#define BETA            (0.975)
 //decay for vertical speed
-#define BETA2 0.8
+#define BETA2           (0.8)
 
 #if ARDIMU == 1
-#define SERIAL_MUX 7
-#define RED_LED 5      // RED
-#define STATUS_LED 6     // BLUE
-#define YELLOW_LED 7   // not installed on v3 board?
+    #define SERIAL_MUX      (7)
+    #define RED_LED         (5)      
+    #define STATUS_LED      (6)  
+    // not installed on v3 board?   
+    #define YELLOW_LED      (7)   
 #endif
 
 #if MONGOOSE == 1
-#define debugPin 6
-#define STATUS_LED 4  //PD4 on the Atmega328. Red LED
+    #define debugPin        (6)
+    //PD4 on the Atmega328. Red LED
+    #define STATUS_LED      (4)  
 #endif
 
 float deltaT;    // Integration time (DCM algorithm)
-long timer = 0;   //general purpuse timer
-long timerOld;
-long timer24 = 0; //Second timer used to print values 
+static long timer = 0;   //general purpuse timer
+static long timerOld;
+static long timer24 = 0; //Second timer used to print values 
 
 Vector3 vGyro;
 Vector3 vAccel;
 Vector3 vMag;
 Vector3 vGyroOffset;
-float gyroOffsetTemp = 0.0; //the die temp when the vGyroscope zero-offset was measured
+float gyroOffsetTemp = 0.0; // the die temp when the vGyroscope zero-offset was measured
 Vector3 vGyroVariance;
 
 Vector3 vGyroRaw;
@@ -109,14 +120,14 @@ intVector magRaw;
 //for calibrating gyros:
 float angleTurned;
 
-Matrix3 R;             //the DCM
-Matrix3 orientation;   //sensor platform -> body orientation
-Matrix3 magGain;       //hard and soft iron compensation
+Matrix3 R;             // the DCM
+Matrix3 orientation;   // sensor platform -> body orientation
+Matrix3 magGain;       // hard and soft iron compensation
 
 //Kalman variables
-Matrix2 F;             //Transfer function
-Matrix2 P;             //Covariance
-Vector2 x_hat;         //state estimator
+Matrix2 F;             // Transfer function
+Matrix2 P;             // Covariance
+Vector2 x_hat;         // state estimator
 
 // Euler angles etc
 float roll;
@@ -132,110 +143,111 @@ short baroTemp;
 long baroPres;
 int  battery = 100;
 float voltage;
-int  baroAlt; // remains 0.0 on ardIMU
+int  baroAlt; //remains 0.0 on ardIMU
 int  verticalSpeed;
 float gyroTemp = 0.0;
 unsigned int gyroTempRaw;
 
 //These counters allow us to sample some of the sensors at lower rates
-unsigned int  compassCounter = 0;
-unsigned int  baroCounter = 0;
-unsigned int  powerCounter = 0;
-unsigned int  printCounter = 0;
-unsigned int  LEDCounter = 0;
-unsigned int  powerOnCounter = 0;
+static unsigned int  compassCounter = 0;
+static unsigned int  baroCounter = 0;
+static unsigned int  powerCounter = 0;
+static unsigned int  printCounter = 0;
+static unsigned int  LEDCounter = 0;
+static unsigned int  powerOnCounter = 0;
 
 void setup(void) { 
-  
-  Serial.begin(115200);
-  pinMode (STATUS_LED, OUTPUT);  // Status LED
-  //pinMode (debugPin, OUTPUT);  // debug LED
+    Serial.begin(115200);
+    pinMode(STATUS_LED, OUTPUT);  // Status LED
+    //pinMode(debugPin, OUTPUT);  // debug LED
 
-  Serial.println();
-  Serial.println("AHRS firmware rewritten by Alec Myers.");
-  delay(50);
-  Wire.begin();    //Init the I2C
-  delay(200);
-  Serial.println("Init Gyros and Accelerometers...");
-  InitGyroAccel();
-  InitCompass();
-  #if MONGOOSE == 1
-  Serial.println("Init Baro...");
-  InitBaro();
-  # endif
-  Serial.println("Calibrating device parameters...");
-  DeviceCalibrate();
-  
-  timer = millis();
-  delay(100);
-  Serial.println("Beginning operation.");
+    Serial.println();
+    Serial.println("AHRS firmware rewritten by Alec Myers.");
+    delay(50);
+    Wire.begin();    //Init the I2C
+    delay(200);
+    Serial.println("Init Gyros and Accelerometers...");
+    InitGyroAccel();
+    InitCompass();
+#if MONGOOSE == 1
+    Serial.println("Init Baro...");
+    InitBaro();
+#endif
+    Serial.println("Calibrating device parameters...");
+    DeviceCalibrate();
+      
+    timer = millis();
+    delay(100);
+    Serial.println("Beginning operation.");
 }
 
 void loop(void) { //Main Loop 
-
-  #if CALIBRATE_GYROACCEL == 1
-  GyroAccelCal();
-  #else
+#if CALIBRATE_GYROACCEL == 1
+    GyroAccelCal();
+#else
   
-  if((DIYmillis()-timer)>=5) { // Main loop runs at 200Hz
+    if((DIYmillis() - timer) >= 5) { // Main loop runs at 200Hz
+        timerOld = timer;
+        timer=DIYmillis();
+        // Real time of loop run.
+        deltaT = (timer - timerOld) / 1000.0; 
 
-    timerOld = timer;
-    timer=DIYmillis();
-    // Real time of loop run.
-    deltaT = (timer-timerOld)/1000.0; 
-    if(deltaT > 1) {
-      //keeps dt from blowing up
-      deltaT = 0;        
-    }
+        if(deltaT > 1) {
+            //keeps dt from blowing up
+            deltaT = 0;        
+        }
      
-    powerOnCounter++;
-    compassCounter++;
-    baroCounter++;
-    powerCounter++;
-    printCounter++;
-    LEDCounter++;
+        powerOnCounter++;
+        compassCounter++;
+        baroCounter++;
+        powerCounter++;
+        printCounter++;
+        LEDCounter++;
 
-    ReadGyroAccel();
+        ReadGyroAccel();
   
-    if (compassCounter > 10) { //20Hz
-      compassCounter = 0;
-      ReadCompass();
-      CorrectHeading();
-    }
+        // 20Hz
+        if (compassCounter > 10) { 
+            compassCounter = 0;
+            ReadCompass();
+            CorrectHeading();
+        }
     
-    #if MONGOOSE == 1
-    if (baroCounter > 100) { //2Hz
-      baroCounter = 0; 
-      ReadTemperature();
-      ReadAltitude();
-      PrintBaro();
-    }
-    #endif 
+#if MONGOOSE == 1
+        // 2Hz
+        if (baroCounter > 100) { 
+            baroCounter = 0; 
+            ReadTemperature();
+            ReadAltitude();
+            PrintBaro();
+        }
+#endif 
 
-    if (powerOnCounter < 400) { //2 seconds
-      Update(FAST);
-    } else {
-      powerOnCounter = 600;
-      Update(SLOW); 
-    }
+        if (powerOnCounter < 400) { //2 seconds
+            Update(FAST);
+        } else {
+            powerOnCounter = 600;
+            Update(SLOW); 
+        }
   
-    if (powerCounter > 200) {  //1 Hz
-      powerCounter = 0;
-      ReadBattery();
-      PrintPower(); 
-    }
-    // Output every 8 iterations
-    if (printCounter > 7) {
-      printCounter = 0;
-      PrintData(); 
-    }
+        if (powerCounter > 200) {  //1 Hz
+            powerCounter = 0;
+            ReadBattery();
+            PrintPower(); 
+        }
+        
+        // Output every 8 iterations
+        if (printCounter > 7) {
+            printCounter = 0;
+            PrintData(); 
+        }
     
-    if (LEDCounter >  49) {
-      LEDCounter = 0;
-      StatusLEDToggle(); 
+        if (LEDCounter >  49) {
+            LEDCounter = 0;
+            StatusLEDToggle(); 
+        }
     }
-  }
-  #endif
+#endif // CALIBRATE_GYROACCEL == 1
 }
 
 
