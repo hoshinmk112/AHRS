@@ -45,9 +45,9 @@ void DeviceCalibrate(void) {
     //Calculate variances
     vAccelVariance = (vCumAccelSquared - (vCumAccel.squared() / NUM_SAMPLES)) / NUM_SAMPLES;
     vGyroVariance = (vCumGyroRawSquared - (vCumGyroRaw.squared() / NUM_SAMPLES)) / NUM_SAMPLES;
-    vGyroVariance.x /= GYROGAIN_X * GYROGAIN_X;
-    vGyroVariance.y /= GYROGAIN_Y * GYROGAIN_Y;
-    vGyroVariance.z /= GYROGAIN_Z * GYROGAIN_Z;
+    vGyroVariance.x /= (GYROGAIN_X * GYROGAIN_X);
+    vGyroVariance.y /= (GYROGAIN_Y * GYROGAIN_Y);
+    vGyroVariance.z /= (GYROGAIN_Z * GYROGAIN_Z);
     
     vGyroOffset = vCumGyroRaw / NUM_SAMPLES;
     gyroOffsetTemp /= NUM_SAMPLES;
@@ -80,7 +80,7 @@ void DeviceCalibrate(void) {
     // Intermediate R to get level compass reading
     BuildDCM(&R, roll, pitch, 0.0);
     ReadCompass();
-    headingAngle = atan2(- vMag.y, vMag.x);
+    headingAngle = atan2(-vMag.y, vMag.x);
     // Correct R including heading
     BuildDCM(&R, roll, pitch, headingAngle);
 #endif
@@ -89,7 +89,7 @@ void DeviceCalibrate(void) {
 #if REORIENT == 1
     BuildDCM(&orientation, roll, pitch, 0.0);
     ReadCompass();
-    headingAngle = atan2(- vMag.y, vMag.x);
+    headingAngle = atan2(-vMag.y, vMag.x);
     BuildDCM(&R, 0.0, 0.0, headingAngle);
 #endif
   
@@ -112,7 +112,7 @@ void DeviceCalibrate(void) {
 void StatusLEDToggle(void) {
     static char state = 0;
 
-    if(state) {
+    if (state) {
       digitalWrite(STATUS_LED,LOW);
       state = 0;
     }
@@ -124,8 +124,8 @@ void StatusLEDToggle(void) {
 
 void ReadBattery(void) {
     voltage = 2 * 3.3 * analogRead(A0) / 1024;
-    int batteryNew = 100 * (voltage - 3.4) / 0.7;
-    batteryNew = constrain(batteryNew, 0, 100);
+    uint8_t batteryNew = (uint8_t)(100 * (voltage - 3.4) / 0.7);
+    batteryNew = (uint8_t)constrain(batteryNew, 0, 100);
     battery = (batteryNew < battery) ? batteryNew : battery;
 }
 
@@ -142,7 +142,6 @@ void InitGyroAccel(void) {
 
 void ReadGyroAccel(void) {
     float gyroTempDelta;
-    
 #if (MONGOOSE == 1) && (ARDIMU == 0)
     ReadITG3200();
     ReadADXL345();
@@ -186,7 +185,7 @@ void GyroAccelCal(void) {
     Vector3 vAvgAccel;
     Vector3 vAvgGyro;
     float avgGyroTemp = 0.0;
-    unsigned int  calibCounter;
+    uint16_t  calibCounter;
   
     for (calibCounter = 0; calibCounter < NUM_SAMPLES; calibCounter++) {
       // collect accelerations, gyros
@@ -202,17 +201,17 @@ void GyroAccelCal(void) {
     avgGyroTemp /= NUM_SAMPLES;
     Serial.print(avgGyroTemp);
     Serial.print(", ");
-    Serial.print(vAvgGyro.x,1);
+    Serial.print(vAvgGyro.x, 1);
     Serial.print(", ");
-    Serial.print(vAvgGyro.y,1);
+    Serial.print(vAvgGyro.y, 1);
     Serial.print(", ");
-    Serial.print(vAvgGyro.z,1);
+    Serial.print(vAvgGyro.z, 1);
     Serial.print(", ");
-    Serial.print(vAvgAccel.x,1);
+    Serial.print(vAvgAccel.x, 1);
     Serial.print(", ");
-    Serial.print(vAvgAccel.y,1);
+    Serial.print(vAvgAccel.y, 1);
     Serial.print(", ");
-    Serial.print(vAvgAccel.z,1);
+    Serial.print(vAvgAccel.z, 1);
     Serial.print(", ");
-    Serial.println(baroTemp,1);
+    Serial.println(baroTemp, 1);
 }

@@ -62,7 +62,7 @@ extern float pitchRate;
 extern float magStrength;
 extern short baroTemp;
 extern long baroPres;
-extern int  battery;
+extern uint8_t battery;
 extern float voltage;
 extern int  baroAlt; 
 extern int  verticalSpeed;

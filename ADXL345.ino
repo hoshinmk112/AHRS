@@ -35,7 +35,7 @@ void InitADXL345(void) {
 // Reads x,y and z vAccelerometer registers
 void ReadADXL345(void) {
     int8_t i = 0;
-    byte buff[6];
+    uint16_t buff[6];
 
     Wire.beginTransmission(AccelAddress); 
     Wire.write((uint8_t)0x32);        //sends address to read from
@@ -45,15 +45,15 @@ void ReadADXL345(void) {
     Wire.requestFrom(AccelAddress, (uint8_t)6);    // request 6 bytes from device
 
     while (Wire.available()) {  // ((Wire.available())&&(i<6))
-        buff[i] = Wire.read();  // receive one byte
+        buff[i] = (uint16_t)Wire.read();  // receive one byte
         i++;
     }
     Wire.endTransmission(); //end transmission
     if (i == 6) { // All bytes received?
         //get the raw data
-        vAccelRaw.x = (((int)buff[1]) << 8) | buff[0]; // X axis
-        vAccelRaw.y = (((int)buff[3]) << 8) | buff[2]; // Y axis 
-        vAccelRaw.z = (((int)buff[5]) << 8) | buff[4]; // Z axis
+        vAccelRaw.x = (float)((buff[1]) << 8) | buff[0]); // X axis
+        vAccelRaw.y = (float)((buff[3]) << 8) | buff[2]); // Y axis 
+        vAccelRaw.z = (float)((buff[5]) << 8) | buff[4]); // Z axis
     } else {
         Serial.println("!ERR: Error reading accelerometer info!");
     }

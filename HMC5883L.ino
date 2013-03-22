@@ -29,7 +29,6 @@ void InitCompass(void) {
     magGain.X = Vector3 (MAGGAIN_1, MAGGAIN_2, MAGGAIN_3);
     magGain.Y = Vector3 (MAGGAIN_4, MAGGAIN_5, MAGGAIN_6);
     magGain.Z = Vector3 (MAGGAIN_7, MAGGAIN_8, MAGGAIN_9);
-  
 }
 
 void ReadCompass(void) {

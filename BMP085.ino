@@ -21,20 +21,20 @@
  // static unsigned long bmp085ReadUP(void);
 
 // Oversampling Setting
- static const unsigned char OSS = 0;  
+ static const uint8_t OSS = 0;  
 
 // Calibration values for Barometric Pressure sensor
- static int ac1;
- static int ac2; 
- static int ac3; 
- static unsigned int ac4;
- static unsigned int ac5;
- static unsigned int ac6;
- static int b1; 
- static int b2;
- static int mb;
- static int mc;
- static int md;
+ static int16_t ac1;
+ static int16_t ac2; 
+ static int16_t ac3; 
+ static uint16_t ac4;
+ static uint16_t ac5;
+ static uint16_t ac6;
+ static int16_t b1; 
+ static int16_t b2;
+ static int16_t mb;
+ static int16_t mc;
+ static int16_t md;
 
 // b5 is calculated in bmp085GetTemperature(...), this variable is also 
 // used in bmp085GetPressure(...)
@@ -49,9 +49,9 @@ void InitBaro(void) {
     ac1 = bmp085ReadInt(0xAA);
     ac2 = bmp085ReadInt(0xAC);
     ac3 = bmp085ReadInt(0xAE);
-    ac4 = bmp085ReadInt(0xB0);
-    ac5 = bmp085ReadInt(0xB2);
-    ac6 = bmp085ReadInt(0xB4);
+    ac4 = (uint16_t)bmp085ReadInt(0xB0);
+    ac5 = (uint16_t)bmp085ReadInt(0xB2);
+    ac6 = (uint16_t)bmp085ReadInt(0xB4);
     b1 = bmp085ReadInt(0xB6);
     b2 = bmp085ReadInt(0xB8);
     mb = bmp085ReadInt(0xBA);
@@ -150,8 +150,8 @@ void ReadAltitude(void) {
 // Read 2 bytes from the BMP085
 // First byte will be from 'address'
 // Second byte will be from 'address'+1
- static int bmp085ReadInt(unsigned char address) {
-    unsigned char msb, lsb;
+ static int16_t bmp085ReadInt(unsigned char address) {
+    int8_t msb, lsb;
 
     Wire.beginTransmission(BMP085_ADDRESS);
     Wire.write(address);
@@ -164,7 +164,7 @@ void ReadAltitude(void) {
     msb = Wire.read();
     lsb = Wire.read();
 
-    return ((int) msb << 8 | lsb);
+    return ((int16_t)msb << 8 | (int16_t)lsb);
 }
 
 // Read the uncompensated temperature value
