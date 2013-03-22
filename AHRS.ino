@@ -49,8 +49,6 @@
 
 #define DEGTORAD        (0.01745329252) /* *pi/180 */
 #define RADTODEG        (57.2957795131) /* *180/pi */
-#define FALSE           (0)
-#define TRUE            (1)
 #define FAST            (1)
 #define SLOW            (0)
 
@@ -67,18 +65,18 @@
 //decay for vertical speed
 #define BETA2           (0.8)
 
-#if ARDIMU == 1
+#if (ARDIMU == 1) && (MONGOOSE == 0)
     #define SERIAL_MUX      (7)
     #define RED_LED         (5)      
     #define STATUS_LED      (6)  
     // not installed on v3 board?   
     #define YELLOW_LED      (7)   
-#endif
-
-#if MONGOOSE == 1
+#elif (MONGOOSE == 1) && (ARDIMU == 0)
     #define debugPin        (6)
     //PD4 on the Atmega328. Red LED
     #define STATUS_LED      (4)  
+#else
+    #error "conflicting definitions: ARDIMU and MONGOOSE"
 #endif
 
 float deltaT;    // Integration time (DCM algorithm)
@@ -153,7 +151,7 @@ void setup(void) {
     Serial.println("Init Gyros and Accelerometers...");
     InitGyroAccel();
     InitCompass();
-#if MONGOOSE == 1
+#if (MONGOOSE == 1) && (ARDIMU == 0)
     Serial.println("Init Baro...");
     InitBaro();
 #endif
@@ -197,7 +195,7 @@ void loop() { //Main Loop
             CorrectHeading();
         }
     
-#if MONGOOSE == 1
+#if (MONGOOSE == 1) && (ARDIMU == 0)
         // 2Hz
         if (baroCounter > 100) { 
             baroCounter = 0; 

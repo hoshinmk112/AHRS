@@ -3,6 +3,8 @@
 #ifndef AHRS_H
 #define AHRS_H
 
+#include <stdint.h>
+
 #include "Vector.h"
 
 

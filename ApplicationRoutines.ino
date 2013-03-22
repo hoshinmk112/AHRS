@@ -21,10 +21,10 @@ void DeviceCalibrate(void) {
     Vector3 vAccelVariance;
     // float cumRoll;
     // float cumPitch;
-    unsigned int  calibCounter;
+    uint16_t calibCounter;
   
     ReadGyroAccel();
-#if MONGOOSE == 1
+#if (MONGOOSE == 1) && (ARDIMU == 0)
     ReadTemperature();
     ReadAltitude();
 #endif
@@ -110,15 +110,15 @@ void DeviceCalibrate(void) {
 }
 
 void StatusLEDToggle(void) {
-    static char state = FALSE;
+    static char state = 0;
 
     if(state) {
       digitalWrite(STATUS_LED,LOW);
-      state = FALSE;
+      state = 0;
     }
     else {
       digitalWrite(STATUS_LED,HIGH);
-      state = TRUE;
+      state = 1;
     }
 }
 
@@ -130,24 +130,26 @@ void ReadBattery(void) {
 }
 
 void InitGyroAccel(void) {
-#if MONGOOSE == 1
+#if (MONGOOSE == 1) && (ARDIMU == 0)
     InitITG3200();
     InitADXL345();
-#endif
-#if ARDIMU == 1
+#elif (ARDIMU == 1) && (MONGOOSE == 0)
     InitMPU6000();
+#else
+    #error "conflicting definitions: ARDIMU and MONGOOSE"
 #endif
 }
 
 void ReadGyroAccel(void) {
     float gyroTempDelta;
     
-#if MONGOOSE == 1
+#if (MONGOOSE == 1) && (ARDIMU == 0)
     ReadITG3200();
     ReadADXL345();
-#endif
-#if ARDIMU == 1
+#elif (ARDIMU == 1) && (MONGOOSE == 0)
     ReadMPU6000();
+#else
+    error "conflicting definitions: ARDIMU and MONGOOSE"
 #endif
     
     //Gyroscope die temperature compensation
