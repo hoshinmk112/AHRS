@@ -18,7 +18,7 @@ void Matrix3::rotate(Vector3 *v) {
 }
 
 void Matrix3::unRotate(Vector3 *v) {
-    Vector3 temp = *v; 
+    Vector3 temp = *v;
     v->x = X.x * temp.x + Y.x * temp.y + Z.x * temp.z;
     v->y = X.y * temp.x + Y.y * temp.y + Z.y * temp.z;
     v->z = X.z * temp.x + Y.z * temp.y + Z.z * temp.z;
@@ -52,7 +52,7 @@ const Vector3 Vector3::operator+(const Vector3 &other) const {
 const Vector3 Vector3::operator-(const Vector3 &other) const {
     return Vector3(x - other.x, y - other.y, z - other.z);
 }
-  
+
 const float Vector3::dot(const Vector3 &other) const {
     return (x * other.x + y * other.y + z * other.z);
 }
@@ -121,7 +121,7 @@ const Vector3 Vector3::normalize() {
     float myMag = sqrt(x*x + y*y + z*z);
     return Vector3(x / myMag, y / myMag, z / myMag);
 }
-  
+
 void Vector3::print(void) {
     Serial.print(1e5*x,0);
     Serial.print(",");
@@ -157,7 +157,7 @@ void Vector2::print(void) {
 
 
 /* MATRIX2 */
-Matrix2::Matrix2(void) {  
+Matrix2::Matrix2(void) {
     uu = 0.0;
     uv = 0.0;
     vu = 0.0;

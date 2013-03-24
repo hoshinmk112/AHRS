@@ -19,7 +19,7 @@ public:
     const Vector3 operator * (const float scale) const;
     const Vector3 operator / (const float scale) const;
     const Vector3 operator / (const Vector3 &other) const;
-    
+
     Vector3 & operator *= (const float scale);
     Vector3 & operator /= (const float scale);
     Vector3 & operator /= (const Vector3 &other);

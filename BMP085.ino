@@ -8,9 +8,9 @@
 
 #include "BMP085.h"
 #include "AHRS.h"
- 
+
 // I2C address of BMP085
-#define BMP085_ADDRESS (0x77)  
+#define BMP085_ADDRESS (0x77)
 
 
  // static short bmp085GetTemperature(unsigned int ut);
@@ -21,25 +21,25 @@
  // static unsigned long bmp085ReadUP(void);
 
 // Oversampling Setting
- static const uint8_t OSS = 0;  
+ static const uint8_t OSS = 0;
 
 // Calibration values for Barometric Pressure sensor
  static int16_t ac1;
- static int16_t ac2; 
- static int16_t ac3; 
+ static int16_t ac2;
+ static int16_t ac3;
  static uint16_t ac4;
  static uint16_t ac5;
  static uint16_t ac6;
- static int16_t b1; 
+ static int16_t b1;
  static int16_t b2;
  static int16_t mb;
  static int16_t mc;
  static int16_t md;
 
-// b5 is calculated in bmp085GetTemperature(...), this variable is also 
+// b5 is calculated in bmp085GetTemperature(...), this variable is also
 // used in bmp085GetPressure(...)
 // so ...Temperature(...) must be called before ...Pressure(...).
- static long b5; 
+ static long b5;
 
 
 // Stores all of the bmp085's calibration values into global variables
@@ -93,7 +93,7 @@ void ReadAltitude(void) {
     x2 = ((long)mc << 11) / (x1 + md);
     b5 = x1 + x2;
 
-    return ((b5 + 8) >> 4);  
+    return ((b5 + 8) >> 4);
 }
 
 // Calculate pressure given up

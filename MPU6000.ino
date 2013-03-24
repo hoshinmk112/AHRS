@@ -680,7 +680,7 @@ void MPU6000_FIFO_reset(void)  {
 
 // Read a packet from FIFO
 void MPU6000_FIFO_getPacket(void) {
-	uint8_t i;
+    uint8_t i;
     uint8_t dump;
     // uint8_t return_value;
      uint8_t addr = MPUREG_FIFO_R_W | 0x80; // Set most significant bit
@@ -764,7 +764,7 @@ static void _SPI_write(uint8_t reg, uint8_t data) {
 
 // Function to write bytes into mpu memory (bank, address)
 static void _set_mpu_memory(uint8_t bank, uint8_t address, uint8_t num, uint8_t regs[]) {
-	uint8_t i;
+    uint8_t i;
     uint8_t dump;
 
     _SPI_write(MPUREG_BANK_SEL, bank);
@@ -964,8 +964,8 @@ static void _set_sensor_fusion_accel_gain(uint8_t gain) {
 
 // Load initial memory values into DMP memory banks
 static void _dmp_load_mem(void) {
-	int i, k;
-	uint8_t j;
+    int i, k;
+    uint8_t j;
     uint8_t dump;
 
     for(i = 0; i < 7; i++) {
@@ -1080,7 +1080,7 @@ static float _gyro_bias_correction_from_compass(float heading) {
         _gyro_bias[2] -= (int)_gyro_bias[2];  // we remove the part that we have already corrected on registers...
     }
 
-	return 0; // robd
+    return 0; // robd
 }
 
 
