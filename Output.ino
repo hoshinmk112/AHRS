@@ -3,7 +3,7 @@
 #include "Output.h"
 #include "AHRS.h"
 
-void PrintData(void) {    
+void PrintData(void) {
 #if PRINT_JSON == 1
     Serial.print("{\"attitude\":{\"roll\":");
     Serial.print(RADTODEG * roll);
@@ -20,8 +20,9 @@ void PrintData(void) {
     Serial.print(",\"turnRate\":");
     Serial.print(RADTODEG * turnRate);
     Serial.print("}");
+    Serial.println();
 #endif
-      
+
 #if PRINT_LEVIL == 1
     Serial.print("$RPYL,");
     Serial.print(10 * RADTODEG * roll, 0);
@@ -38,21 +39,8 @@ void PrintData(void) {
     Serial.print(",");
     Serial.print("0");
     Serial.print(",");
+    Serial.println();
 #endif
-      
-#if CALIBRATE_MAG == 1
-    Serial.print(magRaw.x);
-    Serial.print(",");
-    Serial.print(magRaw.y);
-    Serial.print(",");  
-    Serial.print(magRaw.z);
-    Serial.print(",");
-    R.print();
-    Serial.print(",");
-    Serial.print(angleTurned);
-#endif
-
-      Serial.println();
 }
 
 void PrintBaro(void) {

@@ -13,17 +13,6 @@
 #define PRINT_JSON              (0)
 #define PRINT_LEVIL             (0)
 #define PRINT_LEVILBARO         (0)
-#define CALIBRATE_MAG           (1)
-#define CALIBRATE_GYROACCEL     (1)
-
-// Which platform
-#define MONGOOSE                (0)
-#define ARDIMU                  (1)
-
-//use local coordinate frame measured at calibration time
-//or use Mongoose frame
-#define REORIENT                (1)
-#define IGNORE_MAG              (0)
 
 // #ifdef __cplusplus
 // extern "C"{
@@ -34,7 +23,7 @@ extern Vector3 vGyro;
 extern Vector3 vAccel;
 extern Vector3 vMag;
 extern Vector3 vGyroOffset;
-extern float gyroOffsetTemp; 
+extern float gyroOffsetTemp;
 extern Vector3 vGyroVariance;
 
 extern Vector3 vGyroRaw;
@@ -43,13 +32,13 @@ extern intVector magRaw;
 
 extern float angleTurned;
 
-extern Matrix3 R;            
-extern Matrix3 orientation;   
-extern Matrix3 magGain; 
+extern Matrix3 R;
+extern Matrix3 orientation;
+extern Matrix3 magGain;
 
-extern Matrix2 F;             
-extern Matrix2 P;            
-extern Vector2 x_hat; 
+extern Matrix2 F;
+extern Matrix2 P;
+extern Vector2 x_hat;
 
 extern float roll;
 extern float pitch;
@@ -64,7 +53,7 @@ extern short baroTemp;
 extern long baroPres;
 extern uint8_t battery;
 extern float voltage;
-extern int  baroAlt; 
+extern int  baroAlt;
 extern int  verticalSpeed;
 extern float gyroTemp;
 extern unsigned int gyroTempRaw;

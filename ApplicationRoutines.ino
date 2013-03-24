@@ -22,15 +22,10 @@ void DeviceCalibrate(void) {
     // float cumRoll;
     // float cumPitch;
     uint16_t calibCounter;
-  
+
     ReadGyroAccel();
-#if (MONGOOSE == 1) && (ARDIMU == 0)
-    ReadTemperature();
-    ReadAltitude();
-#endif
-  
     Serial.print("Starting Calibration loop...");
-  
+
     for (calibCounter = 0; calibCounter < NUM_SAMPLES; calibCounter++) {
       ReadGyroAccel();
       vCumAccel += vAccel;
@@ -39,19 +34,19 @@ void DeviceCalibrate(void) {
       vCumGyroRawSquared += vGyroRaw.squared();
       gyroOffsetTemp += gyroTemp;
     }
-  
+
     Serial.println("... finished.");
-  
+
     //Calculate variances
     vAccelVariance = (vCumAccelSquared - (vCumAccel.squared() / NUM_SAMPLES)) / NUM_SAMPLES;
     vGyroVariance = (vCumGyroRawSquared - (vCumGyroRaw.squared() / NUM_SAMPLES)) / NUM_SAMPLES;
     vGyroVariance.x /= (GYROGAIN_X * GYROGAIN_X);
     vGyroVariance.y /= (GYROGAIN_Y * GYROGAIN_Y);
     vGyroVariance.z /= (GYROGAIN_Z * GYROGAIN_Z);
-    
+
     vGyroOffset = vCumGyroRaw / NUM_SAMPLES;
     gyroOffsetTemp /= NUM_SAMPLES;
-  
+
     //either write values to EEPROM or read them from EEPROM
     //if the accel variance is sufficiently small then we were still enough
     //values to store are vGyroVariance, vGyroOffset, vGyroOffsetTemp
@@ -71,28 +66,20 @@ void DeviceCalibrate(void) {
         EEPROM_writeAnything(12, vGyroVariance);
         EEPROM_writeAnything(24, gyroOffsetTemp);
     }
-    
+
     //calculate current body angles
     roll  = -atan2(vCumAccel.y,  -vCumAccel.z); //when right side up, z-accel is -1.0
     pitch = asin(vCumAccel.x  / vCumAccel.magnitude());
     //if not reorienting to null current angles
-#if REORIENT == 0
+
     // Intermediate R to get level compass reading
     BuildDCM(&R, roll, pitch, 0.0);
     ReadCompass();
     headingAngle = atan2(-vMag.y, vMag.x);
     // Correct R including heading
     BuildDCM(&R, roll, pitch, headingAngle);
-#endif
-  
-    //null current roll/pitch body angles
-#if REORIENT == 1
-    BuildDCM(&orientation, roll, pitch, 0.0);
-    ReadCompass();
-    headingAngle = atan2(-vMag.y, vMag.x);
-    BuildDCM(&R, 0.0, 0.0, headingAngle);
-#endif
-  
+
+
     slipAngle = 0.0;
     turnRate = 0.0;
     gLoad = 1.0;
@@ -130,27 +117,13 @@ void ReadBattery(void) {
 }
 
 void InitGyroAccel(void) {
-#if (MONGOOSE == 1) && (ARDIMU == 0)
-    InitITG3200();
-    InitADXL345();
-#elif (ARDIMU == 1) && (MONGOOSE == 0)
     InitMPU6000();
-#else
-    #error "conflicting definitions: ARDIMU and MONGOOSE"
-#endif
 }
 
 void ReadGyroAccel(void) {
     float gyroTempDelta;
-#if (MONGOOSE == 1) && (ARDIMU == 0)
-    ReadITG3200();
-    ReadADXL345();
-#elif (ARDIMU == 1) && (MONGOOSE == 0)
     ReadMPU6000();
-#else
-    error "conflicting definitions: ARDIMU and MONGOOSE"
-#endif
-    
+
     //Gyroscope die temperature compensation
     if (gyroTemp == 0.0) {
         gyroTemp = gyroTempRaw;
@@ -158,22 +131,17 @@ void ReadGyroAccel(void) {
         gyroTemp = gyroTemp * BETA + (1.0 - BETA) * gyroTempRaw;
     }
     gyroTempDelta = gyroTemp - gyroOffsetTemp; //temperature difference since calibration
-    
+
     //GYROSCOPE:
-    vGyro.x = (vGyroRaw.x - (GYRO_T_OFFSET_COEFFICIENT_X * gyroTempDelta + vGyroOffset.x)) / GYROGAIN_X;                                                                          
+    vGyro.x = (vGyroRaw.x - (GYRO_T_OFFSET_COEFFICIENT_X * gyroTempDelta + vGyroOffset.x)) / GYROGAIN_X;
     vGyro.y = (vGyroRaw.y - (GYRO_T_OFFSET_COEFFICIENT_Y * gyroTempDelta + vGyroOffset.y)) / GYROGAIN_Y;
     vGyro.z = (vGyroRaw.z - (GYRO_T_OFFSET_COEFFICIENT_Z * gyroTempDelta + vGyroOffset.z)) / GYROGAIN_Z;
-    
+
     //ACCELEROMETER:
     vAccel.x = (vAccelRaw.x - ACCELOFFSET_X) / ACCELGAIN_X;
     vAccel.y = (vAccelRaw.y - ACCELOFFSET_Y) / ACCELGAIN_Y;
     vAccel.z = (vAccelRaw.z - ACCELOFFSET_Z - baroTemp * ACCELOFFSET_Z_T_COEFFICIENT) / ACCELGAIN_Z;
-    
-#if REORIENT == 1
-    orientation.rotate(&vAccel);
-    orientation.rotate(&vGyro);
-#endif
-    
+
     gLoad = gLoad * BETA + (1.0 - BETA) * vAccel.magnitude();
     slipAngle = slipAngle * BETA + atan2(-vAccel.y, -vAccel.z) * (1.0 - BETA); //damped
     //note positive slip angle is ball-to-the-left
@@ -186,7 +154,7 @@ void GyroAccelCal(void) {
     Vector3 vAvgGyro;
     float avgGyroTemp = 0.0;
     uint16_t  calibCounter;
-  
+
     for (calibCounter = 0; calibCounter < NUM_SAMPLES; calibCounter++) {
       // collect accelerations, gyros
       ReadGyroAccel();

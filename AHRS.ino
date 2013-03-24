@@ -1,40 +1,28 @@
 /*
 */
-// Released under Creative Commons License 
-// Modifications and additions by Cory Duce to allow it to work with Mongoose hardware
-// Based on code by Doug Weibel and Jose Julio which was based on ArduIMU v1.5 by Jordi Munoz 
+// Released under Creative Commons License
+// Based on code by Doug Weibel and Jose Julio which was based on ArduIMU v1.5 by Jordi Munoz
 // and William Premerlani, Jose Julio and Doug Weibel
 // Heavily rewritten by Alec Myers
 
-// Axis definition: 
+// Axis definition:
 // X axis pointing forward (AWAY FROM the battery connector)
-// Y axis pointing to the right 
+// Y axis pointing to the right
 // Z axis pointing down
 // Positive pitch : nose up
 // Positive roll : right wing down
 // Positive yaw : clockwise
 
-/* Mongoose Hardware version - v1.0
- ATMega328@3.3V w/ external 16MHz resonator
- High Fuse DA
- Low Fuse FF
- ADXL345: vAccelerometer
- HMC5843: Magnetometer
- IGT-3200: vGyro
- BMP085: Barometric Pressure sensor
- Programmer : 3.3v FTDI
- Arduino IDE : Select board  "Arduino Pro or Pro mini (3.3V, 8MHz) w/ Atmega328"
- */
- 
-/* ARDIMU Hardware V3.0
- ATMega328@5V w/ external 16MHz resonator
- HMC5843: Magnetometer
+/* APM 2.0 Hardware
+ ATMega2560@5V w/ external 16MHz resonator
+ HMC5883L: Magnetometer
  MPU6000 Accelerometer+Gyro
+ MS5611-01BA03: Barometric Pressure Sensor
+ Mediatek 3329: GPS
  Programmer : 5.0v FTDI
- Arduino IDE : Select board  "Arduino Pro or Pro mini (5V, 16MHz) w/ Atmega328"
+ Arduino IDE : Select board  ""
  */
 #include <EEPROM.h>
-//#include <HMC58X3.h>
 #include <math.h>
 #include <Wire.h>
 
@@ -55,36 +43,28 @@
 #define SLEW_RATE       (0.004)
 
 // S.D. of compass measurement 0.1 radians
-#define SIGMA_angle     (0.1) 
-//don't apply g angle correction when g-load closer to 1 than this:
+#define SIGMA_angle     (0.1)
+// don't apply g angle correction when g-load closer to 1 than this:
 #define G_DEADBAND      (0.05)
-//no of samples for initial calibration of gyro drift
+// no of samples for initial calibration of gyro drift
 #define NUM_SAMPLES     (1000)
-//exponential decay for turn rate, etc
+// exponential decay for turn rate, etc
 #define BETA            (0.975)
-//decay for vertical speed
+// decay for vertical speed
 #define BETA2           (0.8)
 
-#if (ARDIMU == 1) && (MONGOOSE == 0)
-    #define SERIAL_MUX      (7)
-    #define RED_LED         (5)      
-    #define STATUS_LED      (6)  
-    // not installed on v3 board?   
-    #define YELLOW_LED      (7)   
-#elif (MONGOOSE == 1) && (ARDIMU == 0)
-    #define debugPin        (6)
-    //PD4 on the Atmega328. Red LED
-    #define STATUS_LED      (4)  
-#else
-    #error "conflicting definitions: ARDIMU and MONGOOSE"
-#endif
+
+#define SERIAL_MUX      (7)
+#define RED_LED         (5)
+#define STATUS_LED      (6)
+// not installed on v3 board?
+#define YELLOW_LED      (7)
+
 
 float deltaT;    // Integration time (DCM algorithm)
-static long timer = 0;   //general purpuse timer
-#if !(CALIBRATE_GYROACCEL)
-static long timerOld;
-#endif
-// static long timer24 = 0; //Second timer used to print values 
+static long timer = 0;   // general purpuse timer
+
+// static long timer24 = 0; //Second timer used to print values
 
 Vector3 vGyro;
 Vector3 vAccel;
@@ -128,17 +108,7 @@ int  verticalSpeed;
 float gyroTemp = 0.0;
 unsigned int gyroTempRaw;
 
-//These counters allow us to sample some of the sensors at lower rates
-#if !(CALIBRATE_GYROACCEL)
-static unsigned int  compassCounter = 0;
-static unsigned int  baroCounter = 0;
-static unsigned int  powerCounter = 0;
-static unsigned int  printCounter = 0;
-static unsigned int  LEDCounter = 0;
-static unsigned int  powerOnCounter = 0;
-#endif
-
-void setup(void) { 
+void setup(void) {
     Serial.begin(115200);
     pinMode(STATUS_LED, OUTPUT);  // Status LED
     //pinMode(debugPin, OUTPUT);  // debug LED
@@ -151,34 +121,27 @@ void setup(void) {
     Serial.println("Init Gyros and Accelerometers...");
     InitGyroAccel();
     InitCompass();
-#if (MONGOOSE == 1) && (ARDIMU == 0)
-    Serial.println("Init Baro...");
-    InitBaro();
-#endif
     Serial.println("Calibrating device parameters...");
     DeviceCalibrate();
-      
+
     timer = millis();
     delay(100);
     Serial.println("Beginning operation.");
 }
 
-void loop() { //Main Loop 
-#if CALIBRATE_GYROACCEL == 1
-    GyroAccelCal();
-#else
-  
-    if ((DIYmillis() - timer) >= 5) { // Main loop runs at 200Hz
+void loop() {
+    // Main loop runs at 200Hz
+    if ((DIYmillis() - timer) >= 5) {
         timerOld = timer;
         timer=DIYmillis();
         // Real time of loop run.
-        deltaT = (timer - timerOld) / 1000.0; 
+        deltaT = (timer - timerOld) / 1000.0;
 
         if(deltaT > 1) {
             //keeps dt from blowing up
-            deltaT = 0;        
+            deltaT = 0;
         }
-     
+
         powerOnCounter++;
         compassCounter++;
         baroCounter++;
@@ -187,49 +150,38 @@ void loop() { //Main Loop
         LEDCounter++;
 
         ReadGyroAccel();
-  
+
         // 20Hz
-        if (compassCounter > 10) { 
+        if (compassCounter > 10) {
             compassCounter = 0;
             ReadCompass();
             CorrectHeading();
         }
-    
-#if (MONGOOSE == 1) && (ARDIMU == 0)
-        // 2Hz
-        if (baroCounter > 100) { 
-            baroCounter = 0; 
-            ReadTemperature();
-            ReadAltitude();
-            PrintBaro();
-        }
-#endif 
 
         if (powerOnCounter < 400) { //2 seconds
             Update(FAST);
         } else {
             powerOnCounter = 600;
-            Update(SLOW); 
+            Update(SLOW);
         }
-  
+
         if (powerCounter > 200) {  //1 Hz
             powerCounter = 0;
             ReadBattery();
-            PrintPower(); 
+            PrintPower();
         }
-        
+
         // Output every 8 iterations
         if (printCounter > 7) {
             printCounter = 0;
-            PrintData(); 
+            PrintData();
         }
-    
+
         if (LEDCounter >  49) {
             LEDCounter = 0;
-            StatusLEDToggle(); 
+            StatusLEDToggle();
         }
     }
-#endif // CALIBRATE_GYROACCEL == 1
 }
 
 
