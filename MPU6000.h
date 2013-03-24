@@ -1,14 +1,16 @@
 #ifndef MPU6000_H
 #define MPU6000_H
 
+#include <stdint.h>
+
 #define M_PI                        (3.1415)
-#define RISING                      (1)
+// #define RISING                      (1)
 
 // newstuff
-#define boolean                     (int)
-#define HIGH                        (1)
-#define LOW                         (0)
-#define uint8_t                     unsigned char
+// #define boolean                     int
+// #define HIGH                        (1)
+// #define LOW                         (0)
+//#define uint8_t                     unsigned char
 //
 
 #define RAD2DEG                     (57.295779513)
@@ -122,7 +124,6 @@
 
 // new data flag variable
 //extern volatile uint8_t _MPU6000_newdata;
-extern volatile uint8_t _MPU6000_newdata;
 
 extern void MPU6000_newdata_int(void);
 
@@ -133,39 +134,39 @@ extern void MPU6000_newdata_int(void);
 //
 //        MPU6000_Class(void);       // Constructor
 
-extern void init(void);           // MPU6000 initialization
-extern void dmp_init(void);       // MPU6000 DMP initialization
+extern void MPU6000_init(void);           // MPU6000 initialization
+extern void MPU6000_dmp_init(void);       // MPU6000 DMP initialization
 extern void set_dmp_rate(uint8_t rate);  // set DMP output rate (see constants)
-extern void read(void);           // read raw data
-extern uint8_t newdata(void);     // new attitude data?
-extern void calculate(void);      // Read quaternion data and calculate DCM and euler angles
+extern void MPU6000_read(void);           // read raw data
+extern int MPU6000_newdata(void);     // new attitude data?
+extern void MPU6000_calculate(void);      // Read quaternion data and calculate DCM and euler angles
 
 // Calibration methods
-extern void gyro_offset_calibration(void);  // Performs a gyro offset calibration and store offset values
-extern void accel_offset_calibration(void);  // Performs an accel offset calibration and store offset values
-extern void accel_set_offset(int accel_x_offset, int accel_y_offset, int accel_z_offset);  // Set accelerometer offsets
-extern void accel_get_offset(int *accel_offset);
+extern void MPU6000_gyro_offset_calibration(void);  // Performs a gyro offset calibration and store offset values
+extern void MPU6000_accel_offset_calibration(void);  // Performs an accel offset calibration and store offset values
+extern void MPU6000_accel_set_offset(int accel_x_offset, int accel_y_offset, int accel_z_offset);  // Set accelerometer offsets
+extern void MPU6000_accel_get_offset(int *accel_offset);
 
 // Gyro bias correction methods
-extern void gyro_bias_correction_from_gravity(void);  // Function to correct the gyroX and gyroY bias (roll and pitch) using the gravity vector from accelerometers
+extern void MPU6000_gyro_bias_correction_from_gravity(void);  // Function to correct the gyroX and gyroY bias (roll and pitch) using the gravity vector from accelerometers
 
 // Method to compensate for centrifugal force
-extern void accel_centrifugal_force_correction(float speed);  // We need to provide and external speed estimation in (m/s)
+extern void MPU6000_accel_centrifugal_force_correction(float speed);  // We need to provide and external speed estimation in (m/s)
 
 // Methods to support external magnetometer fusion
-extern float compass_angle(float mag_x, float mag_y, float mag_z, float declination);  // Calculate tilt compensated compass heading (from external magnetometer)
-extern void update_yaw_compass_correction(float compass_heading);  // Update the yaw correction using compass info (compass sensor fusion)
-extern void get_yaw_compass_corrected(void);  // Get the corrected yaw with the compass fusion
+extern float MPU6000_compass_angle(float mag_x, float mag_y, float mag_z, float declination);  // Calculate tilt compensated compass heading (from external magnetometer)
+extern void MPU6000_update_yaw_compass_correction(float compass_heading);  // Update the yaw correction using compass info (compass sensor fusion)
+extern void MPU6000_get_yaw_compass_corrected(void);  // Get the corrected yaw with the compass fusion
 
 // Functions to retrieve attitude data from FIFO (DMP)
-extern void FIFO_reset(void);
-extern void FIFO_getPacket(void);
-extern boolean FIFO_ready(void);
+extern void MPU6000_FIFO_reset(void);
+extern void MPU6000_FIFO_getPacket(void);
+extern int MPU6000_FIFO_ready(void);
 
 // Functions to set gains
-extern void set_accel_fusion_gain(uint8_t gain);
-extern void set_gyro_bias_correction_from_gravity_gain(float gain);
-extern void set_compass_correction_gain(float gain);
+extern void MPU6000_set_accel_fusion_gain(uint8_t gain);
+extern void MPU6000_set_gyro_bias_correction_from_gravity_gain(float gain);
+extern void MPU6000_set_compass_correction_gain(float gain);
 
 //Sensor variables
 extern int accelX;
@@ -232,3 +233,5 @@ extern float DCM[3][3];
 //};
 
 #endif /* MPU6000_H */
+
+
